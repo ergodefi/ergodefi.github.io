@@ -2,27 +2,27 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Posts on Michael Y. Han</title>
-    <link>https://ergodefi.github.io/posts/</link>
+    <link>https://yugomike.github.io/posts/</link>
     <description>Recent content in Posts on Michael Y. Han</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 19 Feb 2022 20:56:53 -0800</lastBuildDate><atom:link href="https://ergodefi.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 19 Feb 2022 20:56:53 -0800</lastBuildDate><atom:link href="https://yugomike.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Bitcoin Transactions - Part 2: generating a P2PKH transaction</title>
-      <link>https://ergodefi.github.io/posts/2-bitcoin-pt2/</link>
+      <link>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</link>
       <pubDate>Sat, 19 Feb 2022 20:56:53 -0800</pubDate>
       
-      <guid>https://ergodefi.github.io/posts/2-bitcoin-pt2/</guid>
+      <guid>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</guid>
       <description>This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.
 git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let&amp;rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.</description>
     </item>
     
     <item>
       <title>Bitcoin Transactions - Part 1: keys and addresses</title>
-      <link>https://ergodefi.github.io/posts/1-bitcoin-pt1/</link>
+      <link>https://yugomike.github.io/posts/1-bitcoin-pt1-keys-and-addresses/</link>
       <pubDate>Sat, 12 Feb 2022 17:51:29 -0800</pubDate>
       
-      <guid>https://ergodefi.github.io/posts/1-bitcoin-pt1/</guid>
+      <guid>https://yugomike.github.io/posts/1-bitcoin-pt1-keys-and-addresses/</guid>
       <description>When you buy or sell bitcoin, the transaction will be recorded and stored permanently on the Bitcoin network. The bitcoin transaction, and the cryptography behind it, is one of the most important and elegant part of Bitcoin. It also forms the foundation for other cryptocurrencies and blockchain platforms, including Ethereum and Solana. So becoming intimately familiar with the inner workings of the bitcoin tranaction is a pre-requisite to getting into the defi space as an engineer or developer.</description>
     </item>
     
