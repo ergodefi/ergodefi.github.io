@@ -6,7 +6,17 @@
     <description>Recent content on Michael Y. Han</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 12 Feb 2022 17:51:29 -0800</lastBuildDate><atom:link href="https://ergodefi.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 19 Feb 2022 20:56:53 -0800</lastBuildDate><atom:link href="https://ergodefi.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Bitcoin Transactions - Part 2: generating a P2PKH transaction</title>
+      <link>https://ergodefi.github.io/posts/2-bitcoin-pt2/</link>
+      <pubDate>Sat, 19 Feb 2022 20:56:53 -0800</pubDate>
+      
+      <guid>https://ergodefi.github.io/posts/2-bitcoin-pt2/</guid>
+      <description>This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.
+git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let&amp;rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.</description>
+    </item>
+    
     <item>
       <title>Bitcoin Transactions - Part 1: keys and addresses</title>
       <link>https://ergodefi.github.io/posts/1-bitcoin-pt1/</link>

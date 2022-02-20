@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Bitcoin Transactions - Part 2: generating a P2PKH transaction | Michael Y. Han</title>
+<meta name="keywords" content="" />
+<meta name="description" content="This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.
+git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let&rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.">
+<meta name="author" content="">
+<link rel="canonical" href="https://ergodefi.github.io/posts/2-bitcoin-pt2/" />
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://ergodefi.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://ergodefi.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://ergodefi.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://ergodefi.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://ergodefi.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Bitcoin Transactions - Part 2: generating a P2PKH transaction" />
+<meta property="og:description" content="This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.
+git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let&rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ergodefi.github.io/posts/2-bitcoin-pt2/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-02-19T20:56:53-08:00" />
+<meta property="article:modified_time" content="2022-02-19T20:56:53-08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bitcoin Transactions - Part 2: generating a P2PKH transaction"/>
+<meta name="twitter:description" content="This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.
+git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let&rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://ergodefi.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Bitcoin Transactions - Part 2: generating a P2PKH transaction",
+      "item": "https://ergodefi.github.io/posts/2-bitcoin-pt2/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bitcoin Transactions - Part 2: generating a P2PKH transaction",
+  "name": "Bitcoin Transactions - Part 2: generating a P2PKH transaction",
+  "description": "This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.\ngit clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let\u0026rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.",
+  "keywords": [
+    
+  ],
+  "articleBody": "This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.\ngit clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let’s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.\nIn real life, if you buy a pizza for \\$20.25 and you hand the cashier \\$25, you will get \\$4.75 back.\nOn the Bitcoin network, and assuming there is $100 in your account, it would look like this: you give all the cash inside your wallet to the cashier and then you take back \\$79.70, leaving \\$20.30. The cashier keeps \\$20.25 for the cost of the pizza, and the remaining \\$0.05 goes to the miner as transaction fee.\nYou see in Bitcoin, there is no freeform representation of money like a $5 bill; instead, all funds are represented as unspent outputs from earlier transactions or UTXOs. Whenever you transact with bitcoins, you have to use the entire value associated with the an account. One or more of the outputs would go to recipients of the transaction as intended, and there is usually also one output that returns the extra “change” back to one of your own accounts.\nWhat happens if there’s not enough funds in an address? You would simply add additional inputs, which would in effect consolidate funds from multiple accounts.\nAt the end of the day, bitcoin transactions are just a different way of thinking about money. By altering the inputs and outputs based on the funds that you have access to, you can construct any transaction on the Bitcoin network.\nLocking and unlocking scripts As you can see, a bitcoin consists primarily consists of inputs and outputs. The inputs are essentially outputs from earlier transactions that are will be spent if the transaction is successful. And the outputs are the UTXOs, unspent transaction outputs available for a future transaction.\nTo keep the UTXOs secure, so that the intended recipient has to demonstrate they have the private key, Bitcoin uses a clever locking and unlocking scripts using digital signature (the elliptical curve variety).\nThe way it works is that when the transaction outputs are created, they come with a locking script that locks the UXTO so that only the person possessing the right private key can solve the algorithmic puzzle. This puzzle is created using Bitcoin’s own scripting language, called Script.\nWhen you create the transaction that consumes the UTXO, you use your private key to sign the transaction to create a digital signature (known as script_sig). The script_sig is encoded along with the input. If you use the correct private key to create the digital signature, you will solve the puzzle, thereby unlocking the UTXO for consumption. If you used the wrong private key, the puzzle fails and the transaction is nullified.\nThere is a lot of math in the verification of the digital signature. If you want to learn the math, I recommend starting with this excellent resource. In Part 3, we will write the Python code to generate and verify the digital signature.\nBut before we get to the digital signature, we need to generate all the other components of a transaction. Let’s do this now.\nIt’s coding time! Now that we have some bitcoins and learned a bit about how transaction works, let’s go ahead and create our own transaction! We are going to create one of the most common transactions (in Bitcoin and real life), which is paying for something and getting some change back.\nGenerating the second identity First, we’ll need a second account (i.e. a new set of private and public keys) so that we can transfer the bitcoin from one account to another and observe the entire process. We can do this easily using the functionality we have already seen in Part 1, made available by helper.py.\n# identity 2  # ======================== secret_key2 = int.from_bytes(b'another secret identity two', 'big') # for reproducibility  assert 1  secret_key2  bitcoin_gen.n public_key2 = secret_key2 * G public_key2_compressed = PublicKey.from_point(public_key2).encode(compressed=True, hash160=False).hex() public_key_hash2 = PublicKey.from_point(public_key2).encode(compressed=True, hash160=True).hex() bitcoin_address2 = PublicKey.from_point(public_key2).address(net='test', compressed=True) print(\"Bitcoin Identity #2\") print(\"* Secret (Private) Key: \", secret_key2) print(\"* Public key (uncompressed): \", (public_key2.x, public_key2.y)) print(\"* public key (compressed): \", public_key2_compressed) print(\"* Public key hash: \", public_key_hash2) print(\"* Bitcoin address: \", bitcoin_address2) Generating the inputs and outputs (TxIn and TxOut) Second, we need to generate the inputs and outputs (known as TxIn and TxOut respectively). We also need a Script object to store the locking and unlocking scripts, which are used in the locking and unlocking of the UTXO. Finally, we will construct the transaction (Tx) itself. Again, I have written the functionality in helper.py, so we can simply focus on understanding the process.\nfrom helper import TxIn, TxOut, Script, Tx # transaction input #1  tx_in = TxIn( prev_tx = bytes.fromhex('6707af5c6d5257067c969fcf7f875e6ad9ad3143e3025f8c391683b23cff9c24'), prev_index = 1, # the 2nd output  script_sig = None, # signature to be inserted later  sequence = 0xffffffff, # almost never used and default to 0xffffffff ) Now let’s construct the transaction input. There is just 1 input, which is the funds we received from the Testnet Faucet transaction from Part 1.\nThat was a transaction with its own inputs and outputs, and one of its outputs was 0.0001 BTC sent to our public hey kash address. That was an example of an UXTO, and we are now going to spent it in the transaction we are creating.\nTo identify this input, we reference the previous transaction’s address (in the form of the public key hash) and the the index of that output (1 is he index as it indicates it was the second output). You don’t have to specify the actual value of the input, as Bitcoin can simply look up that previous transaction for the output’s value.\nWe also need to generate the digital signature (script_sig) used to unlock the UTXO. However, we cannot generate this yet, as it involves signing the entire transaction, which we are still constructing. We will come back to this later.\nFinally, every input also contains a sequence. It is not a feature currently being used, and this is indicated by the Bitcoin protocol as 0xffffffff.\nTransaction Outputs We will create 2 outputs, and this means we need 2 instances of TxOut. Unlike with input, we have to specify the actual amount for each output. Note that the amount is stored in the smallest unit of bitcoin, the satoshi, and 1 bitcoin = 100,000,000 sats. The transaction fee paid to the miner is not explicitly stated in the transaction. It is simply the difference between the sum of inputs and outputs.\n# transaction output #1 tx_out1 = TxOut( amount = 75000, ) # transaction output #2 tx_out2 = TxOut( amount = 22000, ) # 75000 + 22000 = 97000, which means 3000 sats are paid to the miner as transaction fee  We also have to create the locking script (or script_pubkey) for each output. The reference to pubkey refers to the public key hash. Each output is constructed so that it can only be unlocked by the person holding the private key for that public key hash. Recall the one-way relationships: private key creates the public key; and the public key creates the public key hash.\nThis means:\n as output 1 is being transferred to identity #2, its script_pubkey must include the public key hash for identity #2 as output 2 is transferred back to identity #1, its script_pubkey must include the public key hash for identity #1  output1_pkh = PublicKey.from_point(public_key2).encode(compressed=True, hash160=True) output2_pkh = PublicKey.from_point(public_key).encode(compressed=True, hash160=True) # 118, 169, 136 and 172 are op_codes. # Refer to https://en.bitcoin.it/wiki/Script for more info output1_script = Script([118, 169, output1_pkh, 136, 172]) output2_script = Script([118, 169, output2_pkh, 136, 172]) output1_script.encode().hex() # output 1 in hex: 1976a91400f6739d5e8b4017a9eebe413249ed3949e65e2488ac output2_script.encode().hex() # output 2 in hex: 1976a91400f6739d5e8b4017a9eebe413249ed3949e65e2488ac tx_out1.script_pubkey = output1_script # adding script_pubkey to output 1 tx_out2.script_pubkey = output2_script # adding script_pubkey to output 2 The placeholder for digital signature (previous transaction locking script) So far, we have created 2 identities, the input and outputs, and the locking scripts for the outputs. The only thing we are missing is the unlocking script or digital signature (script_sig) for the input.\nHowever, there is a problem. You see, the script_sig is generated by signing the hash of the entire transaction, which we are still building. So it seems we have a catch 22 on our hands. Fortunately, the Bitcoin protocol has a rule that solves our issue. Bitcoin requires that we replace the encoding of the script_sig (which we don’t have) with the script_pubkey from the previous transaction’s corresponding output (which we can find).\nWhat is the script_pubkey from the previous transaction? You can find it by going back to the previous transaction. With the OP_CODES expressed, it looks like the highlighted below.\nStaying true to the nature of this series, we are going to recreate it a more elementary format.\n# retrieve previous transaction output public key hash  public_key_hash = PublicKey.from_point(public_key).encode(compressed=True, hash160=True) # constructing the previous tx locking script  prev_tx_script_pubkey = Script([118, 169, public_key_hash, 136, 172]) # adding the locking script as placeholder for input digital signature tx_in.prev_tx_script_pubkey = prev_tx_script_pubkey print(\"Previous tx locking script:\", prev_tx_script_pubkey.encode().hex()) Previous tx locking script: 1976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88ac  Constructing the transaction (without digital signature) Now we have everything to finally construct the transaction! First, let’s import the transaction object (Tx) from helper.py. We will be storing all the ingredients inside this object, and use its encode() function to create the message for signing.\ntransaction = Tx( version = 1, # currently just version 1 exists tx_ins = [tx_in], tx_outs = [tx_out1, tx_out2], locktime = 0, ) message = transaction.encode(sig_index = 0) print(\"Message for signing: \", message.hex()) Message for signing: 0100000001249cff3cb28316398c5f02e34331add96a5e877fcf9f967c0657526d5caf0767010000001976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88acffffffff02f8240100000000001976a91400f6739d5e8b4017a9eebe413249ed3949e65e2488acf0550000000000001976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88ac0000000001000000  That’s it for Part 2. I was hoping to cover all of the digital signature, but it is getting too long. So instead, we will pick up from where we left off and generate the digital signature in the next part. We will then finally create the final transaction and propagate it to the Bitcoin network (Testnet).\nStay tuned!\n",
+  "wordCount" : "1702",
+  "inLanguage": "en",
+  "datePublished": "2022-02-19T20:56:53-08:00",
+  "dateModified": "2022-02-19T20:56:53-08:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://ergodefi.github.io/posts/2-bitcoin-pt2/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Michael Y. Han",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ergodefi.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://ergodefi.github.io/" accesskey="h" title="Michael Y. Han (Alt + H)">Michael Y. Han</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title">
+      Bitcoin Transactions - Part 2: generating a P2PKH transaction
+    </h1>
+    <div class="post-meta"><span title='2022-02-19 20:56:53 -0800 PST'>February 19, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with <a href="http://localhost:1313/posts/1-bitcoin-pt1/">Part 1</a>. Alternatively, you can clone the code from Part 1 using the command below.</p>
+<pre tabindex="0"><code>git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git
+</code></pre><h3 id="primer-on-bitcoin-transaction">Primer on bitcoin transaction<a hidden class="anchor" aria-hidden="true" href="#primer-on-bitcoin-transaction">#</a></h3>
+<h4 id="utxo">UTXO<a hidden class="anchor" aria-hidden="true" href="#utxo">#</a></h4>
+<p>Before constructing a bitcoin transaction, let&rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.</p>
+<p>In real life, if you buy a pizza for \$20.25 and you hand the cashier \$25, you will get \$4.75 back.</p>
+<p>On the Bitcoin network, and assuming there is $100 in your account, it would look like this: you give all the cash inside your wallet to the cashier and then you take back \$79.70, leaving \$20.30. The cashier keeps \$20.25 for the cost of the pizza, and the remaining \$0.05 goes to the miner as transaction fee.</p>
+<p>You see in Bitcoin, there is no freeform representation of money like a $5 bill; instead, all funds are represented as unspent outputs from earlier transactions or UTXOs. Whenever you transact with bitcoins, you have to use the entire value associated with the an account. One or more of the outputs would go to recipients of the transaction as intended, and there is usually also one output that returns the extra &ldquo;change&rdquo; back to one of your own accounts.</p>
+<p>What happens if there&rsquo;s not enough funds in an address? You would simply add additional inputs, which would in effect consolidate funds from multiple accounts.</p>
+<p>At the end of the day, bitcoin transactions are just a different way of thinking about money. By altering the inputs and outputs based on the funds that you have access to, you can construct any transaction on the Bitcoin network.</p>
+<h4 id="locking-and-unlocking-scripts">Locking and unlocking scripts<a hidden class="anchor" aria-hidden="true" href="#locking-and-unlocking-scripts">#</a></h4>
+<p>As you can see, a bitcoin consists primarily consists of inputs and outputs. The inputs are essentially outputs from earlier transactions  that are will be spent if the transaction is successful. And the outputs are the UTXOs, unspent transaction outputs available for a future transaction.</p>
+<p>To keep the UTXOs secure, so that the intended recipient has to demonstrate they have the private key, Bitcoin uses a clever locking and unlocking scripts using digital signature (the elliptical curve variety).</p>
+<p>The way it works is that when the transaction outputs are created, they come with a locking script that locks the UXTO so that only the person possessing the right private key can solve the algorithmic puzzle. This puzzle is created using Bitcoin&rsquo;s own scripting language, called Script.</p>
+<p>When you create the transaction that consumes the UTXO, you use your private key to sign the transaction to create a digital signature (known as script_sig). The script_sig is encoded along with the input. If you use the correct private key to create the digital signature, you will solve the puzzle, thereby unlocking the UTXO for consumption. If you used the wrong private key, the puzzle fails and the transaction is nullified.</p>
+<p>There is a lot of math in the verification of the digital signature. If you want to learn the math, I recommend starting with this <a href="https://learnmeabitcoin.com/beginners/output_locks">excellent resource</a>. In Part 3, we will write the Python code to generate and verify the digital signature.</p>
+<p>But before we get to the digital signature, we need to generate all the other components of a transaction. Let&rsquo;s do this now.</p>
+<h3 id="its-coding-time">It&rsquo;s coding time!<a hidden class="anchor" aria-hidden="true" href="#its-coding-time">#</a></h3>
+<p>Now that we have some bitcoins and learned a bit about how transaction works, let&rsquo;s go ahead and create our own transaction! We are going to create one of the most common transactions (in Bitcoin and real life), which is paying for something and getting some change back.</p>
+<h4 id="generating-the-second-identity">Generating the second identity<a hidden class="anchor" aria-hidden="true" href="#generating-the-second-identity">#</a></h4>
+<p>First, we&rsquo;ll need a second account (i.e. a new set of private and public keys) so that we can transfer the bitcoin from one account to another and observe the entire process.  We can do this easily using the functionality we have already seen in Part 1, made available by <em>helper.py</em>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># identity 2 </span>
+<span style="color:#75715e"># ========================</span>
+secret_key2 <span style="color:#f92672">=</span> int<span style="color:#f92672">.</span>from_bytes(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;another secret identity two&#39;</span>, <span style="color:#e6db74">&#39;big&#39;</span>) <span style="color:#75715e"># for reproducibility </span>
+<span style="color:#66d9ef">assert</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;=</span> secret_key2 <span style="color:#f92672">&lt;</span> bitcoin_gen<span style="color:#f92672">.</span>n
+public_key2 <span style="color:#f92672">=</span> secret_key2 <span style="color:#f92672">*</span> G
+public_key2_compressed <span style="color:#f92672">=</span> PublicKey<span style="color:#f92672">.</span>from_point(public_key2)<span style="color:#f92672">.</span>encode(compressed<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, hash160<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)<span style="color:#f92672">.</span>hex()
+public_key_hash2 <span style="color:#f92672">=</span> PublicKey<span style="color:#f92672">.</span>from_point(public_key2)<span style="color:#f92672">.</span>encode(compressed<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, hash160<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)<span style="color:#f92672">.</span>hex()
+bitcoin_address2 <span style="color:#f92672">=</span> PublicKey<span style="color:#f92672">.</span>from_point(public_key2)<span style="color:#f92672">.</span>address(net<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;test&#39;</span>, compressed<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+
+print(<span style="color:#e6db74">&#34;Bitcoin Identity #2&#34;</span>)
+print(<span style="color:#e6db74">&#34;* Secret (Private) Key: &#34;</span>, secret_key2)
+print(<span style="color:#e6db74">&#34;* Public key (uncompressed): &#34;</span>, (public_key2<span style="color:#f92672">.</span>x, public_key2<span style="color:#f92672">.</span>y))
+print(<span style="color:#e6db74">&#34;* public key (compressed): &#34;</span>, public_key2_compressed) 
+print(<span style="color:#e6db74">&#34;* Public key hash: &#34;</span>, public_key_hash2) 
+print(<span style="color:#e6db74">&#34;* Bitcoin address: &#34;</span>, bitcoin_address2)
+</code></pre></div><h4 id="generating-the--inputs-and-outputs-txin-and-txout">Generating the  inputs and outputs (TxIn and TxOut)<a hidden class="anchor" aria-hidden="true" href="#generating-the--inputs-and-outputs-txin-and-txout">#</a></h4>
+<p>Second, we need to generate the inputs and outputs (known as TxIn and TxOut respectively). We also need a Script object to store the locking and unlocking scripts, which are used in the locking and unlocking of the UTXO. Finally, we will construct the transaction (Tx) itself. Again, I have written the functionality in <em>helper.py</em>, so we can simply focus on understanding the process.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> helper <span style="color:#f92672">import</span> TxIn, TxOut, Script, Tx
+
+<span style="color:#75715e"># transaction input #1 </span>
+tx_in <span style="color:#f92672">=</span> TxIn(
+    prev_tx <span style="color:#f92672">=</span> bytes<span style="color:#f92672">.</span>fromhex(<span style="color:#e6db74">&#39;6707af5c6d5257067c969fcf7f875e6ad9ad3143e3025f8c391683b23cff9c24&#39;</span>), 
+    prev_index <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, <span style="color:#75715e"># the 2nd output </span>
+    script_sig <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>, <span style="color:#75715e"># signature to be inserted later </span>
+    sequence <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff</span>, <span style="color:#75715e"># almost never used and default to 0xffffffff</span>
+)
+</code></pre></div><p>Now let&rsquo;s construct the transaction input. There is just 1 input, which is the funds we received from the Testnet Faucet transaction from <a href="https://ergodefi.github.io/posts/1-bitcoin-pt1/#getting-some-bitcoins">Part 1</a>.</p>
+<p>That was a transaction with its own inputs and outputs, and one of its outputs was 0.0001 BTC sent to our public hey kash address. That was an example of an UXTO, and we are now going to spent it in the transaction we are creating.</p>
+<p>To identify this input, we reference the previous transaction&rsquo;s address (in the form of the public key hash) and the the index of that output (1 is he index as it indicates it was the second output). You don&rsquo;t have to specify the actual value of the input, as Bitcoin can simply look up that previous transaction for the output&rsquo;s value.</p>
+<p>We also need to generate the digital signature (script_sig) used to unlock the UTXO. However, we cannot generate this yet, as it involves signing the entire transaction, which we are still constructing. We will come back to this later.</p>
+<p>Finally, every input also contains a sequence. It is not a feature currently being used, and this is indicated by the Bitcoin protocol as 0xffffffff.</p>
+<h4 id="transaction-outputs">Transaction Outputs<a hidden class="anchor" aria-hidden="true" href="#transaction-outputs">#</a></h4>
+<p>We will create 2 outputs, and this means we need 2 instances of TxOut. Unlike with input, we have to specify the actual amount for each output. Note that the amount is stored in the smallest unit of bitcoin, the satoshi, and 1 bitcoin = 100,000,000 sats. The transaction fee paid to the miner is not explicitly stated in the transaction. It is simply the difference between the sum of inputs and outputs.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># transaction output #1</span>
+tx_out1 <span style="color:#f92672">=</span> TxOut(
+    amount <span style="color:#f92672">=</span> <span style="color:#ae81ff">75000</span>,
+)
+
+<span style="color:#75715e"># transaction output #2</span>
+tx_out2 <span style="color:#f92672">=</span> TxOut(
+    amount <span style="color:#f92672">=</span> <span style="color:#ae81ff">22000</span>,
+)
+
+<span style="color:#75715e"># 75000 + 22000 = 97000, which means 3000 sats are paid to the miner as transaction fee </span>
+</code></pre></div><p>We also have to create the locking script (or script_pubkey) for each output. The reference to pubkey refers to the public key hash. Each output is constructed so that it can only be unlocked by the person holding the private key for that public key hash. Recall the one-way relationships: private key creates the public key; and the public key creates the public key hash.</p>
+<p>This means:</p>
+<ul>
+<li>as output 1 is being transferred to identity #2, its script_pubkey must include the public key hash for identity #2</li>
+<li>as output 2 is transferred back to identity #1, its script_pubkey must include the public key hash for identity #1</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">output1_pkh <span style="color:#f92672">=</span> PublicKey<span style="color:#f92672">.</span>from_point(public_key2)<span style="color:#f92672">.</span>encode(compressed<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, hash160<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)  
+output2_pkh <span style="color:#f92672">=</span> PublicKey<span style="color:#f92672">.</span>from_point(public_key)<span style="color:#f92672">.</span>encode(compressed<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, hash160<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+
+<span style="color:#75715e"># 118, 169, 136 and 172 are op_codes. # Refer to https://en.bitcoin.it/wiki/Script for more info</span>
+output1_script <span style="color:#f92672">=</span> Script([<span style="color:#ae81ff">118</span>, <span style="color:#ae81ff">169</span>, output1_pkh, <span style="color:#ae81ff">136</span>, <span style="color:#ae81ff">172</span>])
+output2_script <span style="color:#f92672">=</span> Script([<span style="color:#ae81ff">118</span>, <span style="color:#ae81ff">169</span>, output2_pkh, <span style="color:#ae81ff">136</span>, <span style="color:#ae81ff">172</span>])
+
+output1_script<span style="color:#f92672">.</span>encode()<span style="color:#f92672">.</span>hex() <span style="color:#75715e"># output 1 in hex: 1976a91400f6739d5e8b4017a9eebe413249ed3949e65e2488ac</span>
+output2_script<span style="color:#f92672">.</span>encode()<span style="color:#f92672">.</span>hex() <span style="color:#75715e"># output 2 in hex: 1976a91400f6739d5e8b4017a9eebe413249ed3949e65e2488ac</span>
+
+tx_out1<span style="color:#f92672">.</span>script_pubkey <span style="color:#f92672">=</span> output1_script <span style="color:#75715e"># adding script_pubkey to output 1</span>
+tx_out2<span style="color:#f92672">.</span>script_pubkey <span style="color:#f92672">=</span> output2_script <span style="color:#75715e"># adding script_pubkey to output 2</span>
+</code></pre></div><h4 id="the-placeholder-for-digital-signature-previous-transaction-locking-script">The placeholder for digital signature (previous transaction locking script)<a hidden class="anchor" aria-hidden="true" href="#the-placeholder-for-digital-signature-previous-transaction-locking-script">#</a></h4>
+<p>So far, we have created 2 identities, the input and outputs, and the locking scripts for the outputs. The only thing we are missing is the unlocking script or digital signature (script_sig) for the input.</p>
+<p>However, there is a problem. You see, the script_sig is generated by signing the hash of the entire transaction, which we are still building. So it seems we have a catch 22 on our hands. Fortunately, the Bitcoin protocol has a rule that solves our issue. Bitcoin requires that we replace the encoding of the script_sig (which we don&rsquo;t have) with the script_pubkey from the previous transaction&rsquo;s corresponding output (which we can find).</p>
+<p>What is the script_pubkey from the previous transaction? You can find it by going back to the <a href="https://www.blockchain.com/btc-testnet/tx/6707af5c6d5257067c969fcf7f875e6ad9ad3143e3025f8c391683b23cff9c24">previous transaction</a>. With the OP_CODES expressed, it looks like the highlighted below.</p>
+<p><img loading="lazy" src="/images/prev_tx_script_pubkey.png" alt="img"  />
+</p>
+<p>Staying true to the nature of this series, we are going to recreate it a more elementary format.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># retrieve previous transaction output public key hash </span>
+public_key_hash <span style="color:#f92672">=</span> PublicKey<span style="color:#f92672">.</span>from_point(public_key)<span style="color:#f92672">.</span>encode(compressed<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, hash160<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+
+<span style="color:#75715e"># constructing the previous tx locking script </span>
+prev_tx_script_pubkey <span style="color:#f92672">=</span> Script([<span style="color:#ae81ff">118</span>, <span style="color:#ae81ff">169</span>, public_key_hash, <span style="color:#ae81ff">136</span>, <span style="color:#ae81ff">172</span>])
+
+<span style="color:#75715e"># adding the locking script as placeholder for input digital signature</span>
+tx_in<span style="color:#f92672">.</span>prev_tx_script_pubkey <span style="color:#f92672">=</span> prev_tx_script_pubkey 
+
+print(<span style="color:#e6db74">&#34;Previous tx locking script:&#34;</span>, prev_tx_script_pubkey<span style="color:#f92672">.</span>encode()<span style="color:#f92672">.</span>hex())
+</code></pre></div><pre><code>Previous tx locking script: 1976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88ac
+</code></pre>
+<h4 id="constructing-the-transaction-without-digital-signature">Constructing the transaction (without digital signature)<a hidden class="anchor" aria-hidden="true" href="#constructing-the-transaction-without-digital-signature">#</a></h4>
+<p>Now we have everything to finally construct the transaction! First, let&rsquo;s import the transaction object (Tx) from <em>helper.py</em>. We will be storing all the ingredients inside this object, and use its encode() function to create the message for signing.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">transaction <span style="color:#f92672">=</span> Tx(
+    version <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, <span style="color:#75715e"># currently just version 1 exists</span>
+    tx_ins <span style="color:#f92672">=</span> [tx_in],
+    tx_outs <span style="color:#f92672">=</span> [tx_out1, tx_out2],
+    locktime <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>,
+)
+
+message <span style="color:#f92672">=</span> transaction<span style="color:#f92672">.</span>encode(sig_index <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+print(<span style="color:#e6db74">&#34;Message for signing: &#34;</span>, message<span style="color:#f92672">.</span>hex())
+</code></pre></div><pre><code>Message for signing:  0100000001249cff3cb28316398c5f02e34331add96a5e877fcf9f967c0657526d5caf0767010000001976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88acffffffff02f8240100000000001976a91400f6739d5e8b4017a9eebe413249ed3949e65e2488acf0550000000000001976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88ac0000000001000000
+</code></pre>
+<p>That&rsquo;s it for Part 2. I was hoping to cover all of the digital signature, but it is getting too long. So instead, we will pick up from where we left off and generate the digital signature in the next part. We will then finally create the final transaction and propagate it to the Bitcoin network (Testnet).</p>
+<p>Stay tuned!</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://ergodefi.github.io/">Michael Y. Han</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
