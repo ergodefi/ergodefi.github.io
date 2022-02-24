@@ -6,15 +6,26 @@
     <description>Recent content on Michael Y. Han</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 19 Feb 2022 20:56:53 -0800</lastBuildDate><atom:link href="https://yugomike.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 23 Feb 2022 16:49:26 -0800</lastBuildDate><atom:link href="https://yugomike.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Bitcoin Transactions - Part 3: Signing and generating full transaction </title>
+      <link>https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/</link>
+      <pubDate>Wed, 23 Feb 2022 16:49:26 -0800</pubDate>
+      
+      <guid>https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/</guid>
+      <description>In Part 1, we learned about keys and addresses and generated our first identity or account. We also transferred some bitcoins on Testnet using a Faucet application. At the end of the session, we have 0.0001 BTC in transferred to us.
+In Part 2, we generated a second identity or account, and began to construct our own transaction, a Pay to Public Key Hash (P2PKH) transaction to transfer the 0.0001 BTC from our first account to our second account.</description>
+    </item>
+    
     <item>
       <title>Bitcoin Transactions - Part 2: generating a P2PKH transaction</title>
       <link>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</link>
       <pubDate>Sat, 19 Feb 2022 20:56:53 -0800</pubDate>
       
       <guid>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</guid>
-      <description>This is part 2 of a multi-part deep dive into bitcoin transaction. If you want to follow along, you should start with Part 1. Alternatively, you can clone the code from Part 1 using the command below.
-git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Primer on bitcoin transaction UTXO Before constructing a bitcoin transaction, let&amp;rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.</description>
+      <description>Before constructing a bitcoin transaction, let&amp;rsquo;s first highlight the difference between a real life transaction and a bitcoin transaction. Knowing the difference will help you understand bitcoin better.
+In real life, if you buy a pizza for $20.25 and you hand the cashier $25, you will get $4.75 back.
+On the Bitcoin network, and assuming there is $100 in your account, it would look like this: you give all the cash inside your wallet to the cashier and then you take back $79.</description>
     </item>
     
     <item>
@@ -24,6 +35,18 @@ git clone -b 1-wallet-address https://github.com/ergodefi/btc-deepdive.git Prime
       
       <guid>https://yugomike.github.io/posts/1-bitcoin-pt1-keys-and-addresses/</guid>
       <description>When you buy or sell bitcoin, the transaction will be recorded and stored permanently on the Bitcoin network. The bitcoin transaction, and the cryptography behind it, is one of the most important and elegant part of Bitcoin. It also forms the foundation for other cryptocurrencies and blockchain platforms, including Ethereum and Solana. So becoming intimately familiar with the inner workings of the bitcoin tranaction is a pre-requisite to getting into the defi space as an engineer or developer.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://yugomike.github.io/posts/helper/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://yugomike.github.io/posts/helper/</guid>
+      <description>Part 1 Part 2 Part 3
+Testnet Faucet transaction
+TODO
+ Use CSS to make the code soft wrap - see https://discourse.gohugo.io/t/set-width-when-using-syntax-highlighting-and-code-fences/26544/3 for ideas  </description>
     </item>
     
   </channel>

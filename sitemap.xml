@@ -2,17 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</loc>
-    <lastmod>2022-02-19T20:56:53-08:00</lastmod>
+    <loc>https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/</loc>
+    <lastmod>2022-02-23T16:49:26-08:00</lastmod>
   </url><url>
     <loc>https://yugomike.github.io/</loc>
-    <lastmod>2022-02-19T20:56:53-08:00</lastmod>
+    <lastmod>2022-02-23T16:49:26-08:00</lastmod>
   </url><url>
     <loc>https://yugomike.github.io/posts/</loc>
+    <lastmod>2022-02-23T16:49:26-08:00</lastmod>
+  </url><url>
+    <loc>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</loc>
     <lastmod>2022-02-19T20:56:53-08:00</lastmod>
   </url><url>
     <loc>https://yugomike.github.io/posts/1-bitcoin-pt1-keys-and-addresses/</loc>
     <lastmod>2022-02-12T17:51:29-08:00</lastmod>
+  </url><url>
+    <loc>https://yugomike.github.io/posts/helper/</loc>
   </url><url>
     <loc>https://yugomike.github.io/categories/</loc>
   </url><url>
