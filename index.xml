@@ -6,9 +6,19 @@
     <description>Recent content on Michael Y. Han</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 23 Feb 2022 16:49:26 -0800</lastBuildDate><atom:link href="https://yugomike.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 03 Mar 2022 16:49:26 -0800</lastBuildDate><atom:link href="https://yugomike.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Bitcoin Transactions - Part 3: Signing and generating full transaction </title>
+      <title>Bitcoin Transactions - Part 4: Unlocking the UTXO</title>
+      <link>https://yugomike.github.io/posts/4-bitcoin-pt4-unlock-utxo/</link>
+      <pubDate>Thu, 03 Mar 2022 16:49:26 -0800</pubDate>
+      
+      <guid>https://yugomike.github.io/posts/4-bitcoin-pt4-unlock-utxo/</guid>
+      <description>Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that there is no new thing under the sun.
+Yet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?</description>
+    </item>
+    
+    <item>
+      <title>Bitcoin Transactions - Part 3: Signing and Generating Full Transaction </title>
       <link>https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/</link>
       <pubDate>Wed, 23 Feb 2022 16:49:26 -0800</pubDate>
       
@@ -18,7 +28,7 @@ In Part 2, we generated a second identity or account, and began to construct our
     </item>
     
     <item>
-      <title>Bitcoin Transactions - Part 2: generating a P2PKH transaction</title>
+      <title>Bitcoin Transactions - Part 2: Generating a P2PKH Transaction</title>
       <link>https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/</link>
       <pubDate>Sat, 19 Feb 2022 20:56:53 -0800</pubDate>
       
@@ -29,7 +39,7 @@ On the Bitcoin network, and assuming there is $100 in your account, it would loo
     </item>
     
     <item>
-      <title>Bitcoin Transactions - Part 1: keys and addresses</title>
+      <title>Bitcoin Transactions - Part 1: Keys and Addresses</title>
       <link>https://yugomike.github.io/posts/1-bitcoin-pt1-keys-and-addresses/</link>
       <pubDate>Sat, 12 Feb 2022 17:51:29 -0800</pubDate>
       

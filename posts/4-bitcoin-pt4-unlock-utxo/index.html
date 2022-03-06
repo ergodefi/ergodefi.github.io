@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Bitcoin Transactions - Part 4: Unlocking the UTXO | Michael Y. Han</title>
+<meta name="keywords" content="" />
+<meta name="description" content="Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that there is no new thing under the sun.
+Yet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?">
+<meta name="author" content="">
+<link rel="canonical" href="https://yugomike.github.io/posts/4-bitcoin-pt4-unlock-utxo/" />
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.4dcb3c4f38462f66c6b6137227726f5543cb934cca9788f041c087e374491df2.js" integrity="sha256-Tcs8TzhGL2bGthNyJ3JvVUPLk0zKl4jwQcCH43RJHfI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://yugomike.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://yugomike.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://yugomike.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://yugomike.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://yugomike.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Bitcoin Transactions - Part 4: Unlocking the UTXO" />
+<meta property="og:description" content="Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that there is no new thing under the sun.
+Yet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yugomike.github.io/posts/4-bitcoin-pt4-unlock-utxo/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-03-03T16:49:26-08:00" />
+<meta property="article:modified_time" content="2022-03-03T16:49:26-08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bitcoin Transactions - Part 4: Unlocking the UTXO"/>
+<meta name="twitter:description" content="Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that there is no new thing under the sun.
+Yet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://yugomike.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Bitcoin Transactions - Part 4: Unlocking the UTXO",
+      "item": "https://yugomike.github.io/posts/4-bitcoin-pt4-unlock-utxo/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bitcoin Transactions - Part 4: Unlocking the UTXO",
+  "name": "Bitcoin Transactions - Part 4: Unlocking the UTXO",
+  "description": "Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that there is no new thing under the sun.\nYet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?",
+  "keywords": [
+    
+  ],
+  "articleBody": "Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that there is no new thing under the sun.\nYet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?\nAnswer to the Pop Quiz Here is the answer to the pop-quiz from Part 3 pop quiz. This exercise serves as a review of Parts 1 through 3.\nHere is the transaction we generated, encoded in hex format. I’ve separated the bytes so that it is more readable, but it is still just a mess of numbers! Let’ decode this together.\nTransaction:01 00 00 00 01 24 9c ff 3c b2 83 16 39 8c 5f 02 e3 43 31 ad d9 6a 5e 87 7f cf 9f 96 7c 06 57 52 6d 5c af 07 67 01 00 00 00 6a 47 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6 ff ff ff ff 02 f8 24 01 00 00 00 00 00 19 76 a9 14 00 f6 73 9d 5e 8b 40 17 a9 ee be 41 32 49 ed 39 49 e6 5e 24 88 ac f0 55 00 00 00 00 00 00 19 76 a9 14 36 3b b1 ef 1d 87 91 bd bd 7e 74 92 ef 91 de cc 1e b7 29 5d 88 ac 00 00 00 00\nRemember that every bitcoin transaction has 4 sections: version, inputs, outputs and locktime. They are encoded in this order and some of the value are stored as little endian, so that they need to be swapped to obtain the real values.\n1. Version Version: 01 00 00 00\nThe first 4 bytes give us the version of the transaction, stored as little endian. Once you swap endian, you get version 1. This is the only version currently, but in the future we will likely get newer versions. This is Bitcoin’s way of keeping the protocol flexible and future proof.\n2. Inputs Input is the largest part of the transaction. There could be 1 or more inputs to the transaction. Each input references the UTXO from a previous transaction and provides the script_sig or unlocking script, used to unlock the UTXO.\nInput: 01 24 9c ff 3c b2 83 16 39 8c 5f 02 e3 43 31 ad d9 6a 5e 87 7f cf 9f 96 7c 06 57 52 6d 5c af 07 67 01 00 00 00 6a 47 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6 ff ff ff ff\nThe next byte is the input counter. There is 01 input.\nThe next 32 bytes is the previous transaction id, stored as little endian. Once we swap endian, we end up with 67 07 af 5c 6d 52 57 06 7c 96 9f cf 7f 87 5e 6a d9 ad 31 43 e3 02 5f 8c 39 16 83 b2 3c ff 9c 24. We can verify that this is the Testnet Faucet transaction that gave us 0.0001 tBTC. Notice that the transaction hash is the same.\nThe next 4 bytes are the input index, telling us which output from the previous transaction we would like to spend. This is again stored in little endian. Swap endian and remove the trailing zeros and you get 1 which is the index for the second output (remember array index starts at 0).\nBy referencing the the previous transaction id and index, the Bitcoin protocol can find that output and infer its value. You don’t need to actually specificy the value of the input.\nscript_sig The rest of the input script, except the last 4 bytes, give us the script_sig.\nScript_sig: 6a 47 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6\nThe script_sig is encoded differently from what we’ve seen so far, as (1) it is encoded in big endian, and (2) it makes uses of variable integers (varInts) extensively. Recall the script_sig is made up of the digital signature (r, s) values and the unhashed public key. The length of r and s values vary, so we need to tell the Bitcoin network how many bytes to expect. We do that using varInts.\nThe first two bytes are both varInts. The first varInt gives us the length of the entire script_sig. The second varInt gives us the length of the signature portion.\nDER Sequence: 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6 \nFrom here, the next byte, 30 indicates the start of DER encoding, and this is followed by a varInt, 44 to indicate the length of the DER sequence, which works out to 68 bytes. Recall from Part 3 that the signature (r, s) values are encoded using the DER sequence.\nThe next byte, 02, indicates that an integer will follow, the r value in this case. This is followed by another varInt, 20, so the next 32 bytes make up the r value. Finally, we get the r value itself. The encoding follows the same pattern for the s value.\nOnce we decode both, we end up with (r, s) values: (54944a0b195ffbb1d88458375a29c31fbc46fdb7cc5a9befa99d07b38ee00e10, 0da298a28c5f1f90d2e8efb625f817608ecc3d6b16da57f6cbfb46008aab8453)\nSIGHASH flag: 01\nThe signature ends with 1 last byte for SIGHASH flag. This byte indicates which parts of the transaction are hashed to generate the digital signature. In our transaction, 01 indicates SIGHASH_ALL, which means sign all inputs and outputs are signed. This is by far the most common flag.\nFinally, we have the public key. The next byte is a varInt of the length of the public key, 21. The next 33 bytes are the public key:\nPubkey:024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6\nSequence The final 4 bytes are the sequence, which comes immediately after every input. This feature is seldom used, and defaults to ff ff ff ff\nIf there is more than 1 input, each input will be encoded sequentially in this order, one after the other, beginning with the previous transaction id and ending with the sequence. Since there is just one input, the sequence indicates the end of all inputs and start of output.\n3. Outputs Outputs are much more straightforward to decode as each output has just two elements: a value and a locking script.\nOutputs:02 f8 24 01 00 00 00 00 00 19 76 a9 14 00 f6 73 9d 5e 8b 40 17 a9 ee be 41 32 49 ed 39 49 e6 5e 24 88 ac f0 55 00 00 00 00 00 00 19 76 a9 14 36 3b b1 ef 1d 87 91 bd bd 7e 74 92 ef 91 de cc 1e b7 29 5d 88 ac \nThe first byte is the output counter. There are 02 outputs. Recall that we created 2 outputs to simulate the purchase of an item and getting the change back.\nThe next 8 bytes are the value of the first output, stored as little endian. After swapping endian and removing the trailing zeros, you get 0124f8 which is hex for 75000 sats.\nThe next byte, 19, is the hex length of the script_pubkey or locking script. After converting to decimal, we know that the next 25 bytes are the locking script, which are:\nLocking script for first output: 76 a9 14 00 f6 73 9d 5e 8b 40 17 a9 ee be 41 32 49 ed 39 49 e6 5e 24 88 ac\nWe can do the same for the second output, giving us a value of 22000 sats and a locking script of:\nLocking script for second output: 76 a9 14 36 3b b1 ef 1d 87 91 bd bd 7e 74 92 ef 91 de cc 1e b7 29 5d 88 ac\n4. Locktime The last 4 bytes are the locktime, which, like sequence, is a feature that is currently seldom used, and as such as set as their default value, 00 00 00 00. And there you have it! The entire transaction decoded.\nUnlocking the UTXO This is where we learn how Bitcoin’s locking and unlocking mechanism actaully works. While I could just create a python function to perform this task, it will be more instructive if we take a more manual approach and do this by hand, step by step.\nAssembling the scripts First we must assemble the scripts. This is mostly a review, since we have collected both scripts.\nIn Part 1, we asked for 0.0001 BTC from the Testnet Faucet. This automatically created a transaction and the 0.0001 BTC we received is an UXTO. It came with its own locking script (the script_pubkey). Recall we stored the script in variable during the signing process:\nprint(\"Locking script:\", prev_tx_script_pubkey.encode().hex()) Locking script: 1976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88ac\nThen in Part 2 and Part 3, we created our own transaction and generated the the script_sig (or unlocking script):\nUnlocking script: 6a473044022054944a0b195ffbb1d88458375a29c31fbc46fdb7cc5a9befa99d07b38ee00e1002200da298a28c5f1f90d2e8efb625f817608ecc3d6b16da57f6cbfb46008aab84530121024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6\nClean up the scripts Having assembled the correct scripts, we need to clean them up (i.e. removing unnecessary parts) before we can use them.\nFor the unlocking script, recall that it is made up of the signature and the public key. We want to only extract the DER encoded signature block and the public key, discarding the varInt.\n3044022054944a0b195ffbb1d88458375a29c31fbc46fdb7cc5a9befa99d07b38ee00e1002200da298a28c5f1f90d2e8efb625f817608ecc3d6b16da57f6cbfb46008aab84530121024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6\n024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6\nFor the locking script, recall that it is made up of varInts, op_codes and the public key hash. We must discard the varInts and extract the public key hash. I’ve also expressed the op_codes to make this more clear. We eventually end up with:\nLocking script: OP_DUP OP_HASH160 363bb1ef1d8791bdbd7e7492ef91decc1eb7295d OP_EQUALVERIFY OP_CHECKSIG\nPrimer on the Script language We are now ready to do the verification, but how does this work exactly?\nBitcoin has its own programming language simply called Script. It is described as a \"Forth-like, stack-based, reverse-Polish, Turing incomplete programming language.\" Phew. That is a lot! Let’s explain each term one by one:\n  Forth-like means Script resembles Forth, which is an ancient old programming language that you likely have never heard of. One example of this resemblance is Script’s use of op_codes, which Forth introduced.\n  Stack-based means Script evaluates commands on the stack data structure. The stack is a data structure much like a stack of plates. To remove the bottom plate, you have to first remove all the plates above it. Hence, a stack data structure has the characteristic of last in first out (LIFO). You’ll see why this is important in the next section when we evaluate the locking and unlocking scripts.\n  Reverse-Polish is a different way of expressing mathematical notations, where the operators follow the operand. Normally, we would express addition as 3 + 4, but with the Reverse Polish Notation, we would express the same expression as 3 4 +  instead. Reverse Polish Notation was invented to save computer memory and improve calculation speed in the 50s.\n  Turing incomplete means Script is not a complete programming language, like C or Python. Script can perform certain operations butnot other more complex ones, such as looping and conditional statements. This was an intentional design decision to prevent abuse. Only simple scripts can be executed.\n  Evaluating the scripts With the primer on Script, let’s now see the unlocking and locking scripts are evaluated, step-by-step.\nFirst, we assemble the elements in the order of execution. Bitcoin protocol specifies we load the unlocking script then locking script, like so:\n  OP_DUP OP_HASH160  OP_EQUALVERIFY OP_CHECKSIG Bitcoin protocol will execute each element, one at a time. If it is a value, it is pushed onto the stack. If it is an op_code, the op_code runs, consuming one or more elements on the stack. This is repeated until all of the elements are executed. At that point, whatever is left on the stack will determine whether whether the transaction is validate and the UTXO is unlocked.\nReady? Let’s give it a try!\n1.  This is a value, so push it onto the stack.\n2.  Another value, push onto the stack!\n3. OP_DUP Our first op_code is OP_DUP. This pushes a copy of the topmost stack item on to the stack. Since the topmost item is the , it is copied and pushed onto the stack.\n4. OP_HASH160 OP_HASH160 consumes the topmost item on the stack, , the , performs HASH160 on it, and then push the resulting hash onto the stack.\nNote that HASH160 is not a hash function, but a combination of SHA256 and then RIPEMD160 such that RIPEMD160(SHA256()) = .\nIn the helper.py, we’ve already implemented both RIPEMD160 and SHA256, so we can observe OP_HASH160 in action.\nfrom helper import ripemd160, sha256  pubkey = '024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6' pubkey_bytes = bytes.fromhex(pubkey) # convert pubkey to bytes before hashing  pubkey_hash = ripemd160(sha256(pubkey_bytes)) # hash160 is ripemd160(sha256()) print(\"Pubkey_hash: \", pubkey_hash.hex()) Pubkey_hash: 363bb1ef1d8791bdbd7e7492ef91decc1eb7295d\n5.  Another value, push it onto the stack! Astute observers may remark this value, 363bb1ef1d8791bdbd7e7492ef91decc1eb7295d, is the same as the  we just calculated from hash150. Is this a coincidence? I think not!\n6. OP_EQUALVERIFY This op_code is comprised of two op_codes: OP_EQUAL then OP_VERIFY.\nOP_EQUAL consumes the top two items on the stack, compares them, and pushes 1 onto the stack if they are the same, or 0 if different. OP_VERIFY then consumes this top item (i.e. 1 or 0). If it is a 1, continue with the script. If 0, terminate the script.\nThis step basically checks whether the HASH160 of the  from the unlocking script is equal to the  of the locking script.\nWe can see that they are equal, so when OP_EQUAL is executed, both items are consumed, and a 1 is pushed onto the stack. Then, OP_VERIFY consumes the 1 and lets us continue with the script.\nThe verification of the public key hash is why this type of transaction is called Pay to Public Key Hash (P2PKH).\nIn addition to the verification of the digital signature (OP_CHECKSIG, that is the the next step), P2PKH transactions add an extra layer of protection, leveraging the hash functions. Therefore, a P2PKH transaction is protected by ECDSA, RIPEMD160 and SHA256.\n7. OP_CHECKSIG At this point, we have the  and  on the stack, and one more op_code to run, OP_CHECKSIG.\nOP_CHECKSIG consumes the top two items on the stack: (1) the digital signature and (2) public key. It checks whether the signature was generated by the correct private key, without revealing the private key. If so, it pushes 1 onto the stack. Otherwise, it pushes 0.\nSince this is the last element for execution and it consumes the 2 items that are, so whatever is left on the stack should be either 1 or 0. If 1 is the remaining value on the stack, it means the script was successful, and the UTXO is unlocked. Conversely, a 0 would mean invalid script and the UTXO will stay put.\nPretty neat huh?\nOkay, but how does OP_CHECKSIG actually work?\nNot surprisingly, the answer is MATH, or ECDSA verification math to be more precise. This is a big section, so we’ll do it next time. We will also finalize our transaction and propate it to the Testnet Bitcoin Network! Stay tuned.\n",
+  "wordCount" : "2916",
+  "inLanguage": "en",
+  "datePublished": "2022-03-03T16:49:26-08:00",
+  "dateModified": "2022-03-03T16:49:26-08:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://yugomike.github.io/posts/4-bitcoin-pt4-unlock-utxo/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Michael Y. Han",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://yugomike.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://yugomike.github.io/" accesskey="h" title="Michael Y. Han (Alt + H)">Michael Y. Han</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title">
+      Bitcoin Transactions - Part 4: Unlocking the UTXO
+    </h1>
+    <div class="post-meta"><span title='2022-03-03 16:49:26 -0800 PST'>March 3, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>Nothing individual aspect of Bitcoin is particularly groundbreaking or cutting edge. All of the tools and techniques that make up Bitcoin (i.e. ECDSA, public-key crytography, hash functions and so on) have been around since the late 90s. So it would seem that <em>there is no new thing under the sun</em>.</p>
+<p>Yet, when you combining them in a specific way, you end up creating the first true cryptocurency. It makes me wonder what else is possible, but hiding in plain sight waiting for someone to piece together?</p>
+<h2 id="answer-to-the-pop-quiz">Answer to the Pop Quiz<a hidden class="anchor" aria-hidden="true" href="#answer-to-the-pop-quiz">#</a></h2>
+<p>Here is the answer to the pop-quiz from <a href="https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/#pop-quiz">Part 3 pop quiz</a>. This exercise serves as a review of Parts 1 through 3.</p>
+<p>Here is the transaction we generated, encoded in hex format. I&rsquo;ve separated the bytes so that it is more readable, but it is still just a mess of numbers! Let&rsquo; decode this together.</p>
+<p>Transaction:<code>01 00 00 00 01 24 9c ff 3c b2 83 16 39 8c 5f 02 e3 43 31 ad d9 6a 5e 87 7f cf 9f 96 7c 06 57 52 6d 5c af 07 67 01 00 00 00 6a 47 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6 ff ff ff ff 02 f8 24 01 00 00 00 00 00 19 76 a9 14 00 f6 73 9d 5e 8b 40 17 a9 ee be 41 32 49 ed 39 49 e6 5e 24 88 ac f0 55 00 00 00 00 00 00 19 76 a9 14 36 3b b1 ef 1d 87 91 bd bd 7e 74 92 ef 91 de cc 1e b7 29 5d 88 ac 00 00 00 00</code></p>
+<p>Remember that every bitcoin transaction has 4 sections: version, inputs, outputs and locktime. They are encoded in this order and some of the value are stored as <a href="https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/#endianness">little endian</a>, so that they need to be swapped to obtain the real values.</p>
+<h3 id="1-version">1. Version<a hidden class="anchor" aria-hidden="true" href="#1-version">#</a></h3>
+<p>Version:<code> 01 00 00 00</code></p>
+<p>The first 4 bytes give us the <em>version</em> of the transaction, stored as little endian. Once you swap endian, you get <code>version 1</code>. This is the only version currently, but in the future we will likely get newer versions. This is Bitcoin&rsquo;s way of keeping the protocol flexible and future proof.</p>
+<h3 id="2-inputs">2. Inputs<a hidden class="anchor" aria-hidden="true" href="#2-inputs">#</a></h3>
+<p>Input is the largest part of the transaction. There could be 1 or more inputs to the transaction. Each input references the UTXO from a previous transaction and provides the script_sig or unlocking script, used to unlock the UTXO.</p>
+<p>Input:<code> 01 24 9c ff 3c b2 83 16 39 8c 5f 02 e3 43 31 ad d9 6a 5e 87 7f cf 9f 96 7c 06 57 52 6d 5c af 07 67 01 00 00 00 6a 47 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6 ff ff ff ff</code></p>
+<p>The next byte is the <em>input counter</em>. There is <code>01</code> input.</p>
+<p>The next 32 bytes is the <em>previous transaction id</em>, stored as little endian. Once we swap endian, we end up with <code>67 07 af 5c 6d 52 57 06 7c 96 9f cf 7f 87 5e 6a d9 ad 31 43 e3 02 5f 8c 39 16 83 b2 3c ff 9c 24</code>. We can verify that this is the <a href="https://www.blockchain.com/btc-testnet/tx/6707af5c6d5257067c969fcf7f875e6ad9ad3143e3025f8c391683b23cff9c24">Testnet Faucet transaction</a> that gave us 0.0001 tBTC. Notice that the transaction hash is the same.</p>
+<p>The next 4 bytes are the <em>input index</em>, telling us which output from the previous transaction we would like to spend. This is again stored in little endian. Swap endian and remove the trailing zeros and you get <code>1</code> which is the index for the <strong>second</strong> output (remember array index starts at 0).</p>
+<p>By referencing the the previous transaction id and index, the Bitcoin protocol can find that output and infer its value. You don&rsquo;t need to actually specificy the value of the input.</p>
+<h4 id="script_sig">script_sig<a hidden class="anchor" aria-hidden="true" href="#script_sig">#</a></h4>
+<p>The rest of the input script, except the last 4 bytes, give us the <em>script_sig</em>.</p>
+<p>Script_sig:<code> 6a 47 30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6</code></p>
+<p>The script_sig is encoded differently from what we&rsquo;ve seen so far, as (1) it is encoded in big endian, and (2) it makes uses of variable integers (varInts) extensively. Recall the script_sig is made up of the digital signature (r, s) values and the unhashed public key. The length of r and s values vary, so we need to tell the Bitcoin network how many bytes to expect. We do that using varInts.</p>
+<p>The first two bytes are both varInts. The first varInt gives us the length of the entire script_sig. The second varInt gives us the length of the signature portion.</p>
+<p>DER Sequence: <code>30 44 02 20 54 94 4a 0b 19 5f fb b1 d8 84 58 37 5a 29 c3 1f bc 46 fd b7 cc 5a 9b ef a9 9d 07 b3 8e e0 0e 10 02 20 0d a2 98 a2 8c 5f 1f 90 d2 e8 ef b6 25 f8 17 60 8e cc 3d 6b 16 da 57 f6 cb fb 46 00 8a ab 84 53 01 21 02 4e 76 f0 1b c8 ad 2b 0c a7 75 ee 0e 39 2f 52 f5 dd 29 e7 79 38 8c 65 03 04 45 92 c5 6f 69 bf e6 </code></p>
+<p>From here, the next byte, <code>30</code> indicates the start of <em>DER encoding</em>, and this is followed by a varInt, <code>44</code> to indicate the length of the DER sequence, which works out to 68 bytes. Recall from <a href="https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/">Part 3</a> that the signature (r, s) values are encoded using the DER sequence.</p>
+<p>The next byte, <code>02</code>, indicates that an integer will follow, the <em>r value</em> in this case. This is followed by  another varInt, <code>20</code>, so the next 32 bytes make up the r value. Finally, we get the r value itself. The encoding follows the same pattern for the <em>s value</em>.</p>
+<p>Once we decode both, we end up with (r, s) values: <code>(54944a0b195ffbb1d88458375a29c31fbc46fdb7cc5a9befa99d07b38ee00e10, 0da298a28c5f1f90d2e8efb625f817608ecc3d6b16da57f6cbfb46008aab8453)</code></p>
+<p>SIGHASH flag: <code>01</code></p>
+<p>The signature ends with 1 last byte for <em>SIGHASH flag</em>. This byte indicates which parts of the transaction are hashed to  generate the digital signature. In our transaction, <code>01</code> indicates SIGHASH_ALL, which means sign all inputs and outputs are signed. This is by far the most common flag.</p>
+<p>Finally, we have the public key. The next byte is a <em>varInt</em> of the length of the public key, <code>21</code>. The next 33 bytes are the public key:</p>
+<p>Pubkey:<code>024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6</code></p>
+<h4 id="sequence">Sequence<a hidden class="anchor" aria-hidden="true" href="#sequence">#</a></h4>
+<p>The final 4 bytes are the <em>sequence</em>, which comes immediately after every input.  This feature is seldom used, and defaults to <code>ff ff ff ff</code></p>
+<p>If there is more than 1 input, each input will be encoded sequentially in this order, one after the other, beginning with the previous transaction id and ending with the sequence. Since there is just one input, the sequence indicates the end of all inputs and start of output.</p>
+<h3 id="3-outputs">3. Outputs<a hidden class="anchor" aria-hidden="true" href="#3-outputs">#</a></h3>
+<p>Outputs are much more straightforward to decode as each output has just two elements: a value and a locking script.</p>
+<p>Outputs:<code>02 f8 24 01 00 00 00 00 00 19 76 a9 14 00 f6 73 9d 5e 8b 40 17 a9 ee be 41 32 49 ed 39 49 e6 5e 24 88 ac f0 55 00 00 00 00 00 00 19 76 a9 14 36 3b b1 ef 1d 87 91 bd bd 7e 74 92 ef 91 de cc 1e b7 29 5d 88 ac </code></p>
+<p>The first byte is the output counter. There are <code>02</code> outputs. Recall that we created 2 outputs to simulate the purchase of an item and getting the change back.</p>
+<p>The next 8 bytes are the value of the first output, stored as little endian. After swapping endian and removing the trailing zeros, you get <code>0124f8</code> which is hex for 75000 sats.</p>
+<p>The next byte, <code>19</code>, is the hex length of the script_pubkey or locking script. After converting to decimal, we know that the next 25 bytes are the locking script, which are:</p>
+<p>Locking script for first output: <code>76 a9 14 00 f6 73 9d 5e 8b 40 17 a9 ee be 41 32 49 ed 39 49 e6 5e 24 88 ac</code></p>
+<p>We can do the same for the second output, giving us a value of 22000 sats and a locking script of:</p>
+<p>Locking script for second output: <code>76 a9 14 36 3b b1 ef 1d 87 91 bd bd 7e 74 92 ef 91 de cc 1e b7 29 5d 88 ac</code></p>
+<h3 id="4-locktime">4. Locktime<a hidden class="anchor" aria-hidden="true" href="#4-locktime">#</a></h3>
+<p>The last 4 bytes are the locktime, which, like sequence, is a feature that is currently seldom used, and as such as set as their default value, <code>00 00 00 00</code>. And there you have it! The entire transaction decoded.</p>
+<h2 id="unlocking-the-utxo">Unlocking the UTXO<a hidden class="anchor" aria-hidden="true" href="#unlocking-the-utxo">#</a></h2>
+<p>This is where we learn how Bitcoin&rsquo;s locking and unlocking mechanism actaully works. While I could just create a python function to perform this task, it will be more instructive if we take a more manual approach and do this by hand, step by step.</p>
+<h3 id="assembling-the-scripts">Assembling the scripts<a hidden class="anchor" aria-hidden="true" href="#assembling-the-scripts">#</a></h3>
+<p>First we must assemble the scripts. This is mostly a review, since we have collected both scripts.</p>
+<p>In <a href="https://yugomike.github.io/posts/1-bitcoin-pt1-keys-and-addresses/">Part 1</a>, we asked for 0.0001 BTC from the Testnet Faucet. This automatically created a transaction and the 0.0001 BTC we received is an UXTO. It came with its own locking script (the script_pubkey). Recall we stored the script in variable during the signing process:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;Locking script:&#34;</span>, prev_tx_script_pubkey<span style="color:#f92672">.</span>encode()<span style="color:#f92672">.</span>hex())
+</span></span></code></pre></div><p><code>Locking script: 1976a914363bb1ef1d8791bdbd7e7492ef91decc1eb7295d88ac</code></p>
+<p>Then in <a href="https://yugomike.github.io/posts/2-bitcoin-pt2-p2pkh-tx/">Part 2</a> and <a href="https://yugomike.github.io/posts/3-bitcoin-pt3-script-sig-full-tx/">Part 3</a>, we created our own transaction and generated the the script_sig (or unlocking script):</p>
+<p>Unlocking script: <code>6a473044022054944a0b195ffbb1d88458375a29c31fbc46fdb7cc5a9befa99d07b38ee00e1002200da298a28c5f1f90d2e8efb625f817608ecc3d6b16da57f6cbfb46008aab84530121024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6</code></p>
+<h3 id="clean-up-the-scripts">Clean up the scripts<a hidden class="anchor" aria-hidden="true" href="#clean-up-the-scripts">#</a></h3>
+<p>Having assembled the correct scripts, we need to clean them up (i.e. removing unnecessary parts) before we can use them.</p>
+<p>For the <strong>unlocking script</strong>, recall that it is made up of the signature and the public key. We want to only extract the DER encoded signature block and the public key, discarding the varInt.</p>
+<p>&lt;signature&gt;<code>3044022054944a0b195ffbb1d88458375a29c31fbc46fdb7cc5a9befa99d07b38ee00e1002200da298a28c5f1f90d2e8efb625f817608ecc3d6b16da57f6cbfb46008aab84530121024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6</code></p>
+<p>&lt;pubkey&gt;<code>024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6</code></p>
+<p>For the <strong>locking script</strong>, recall that it is made up of varInts, op_codes and the public key hash. We must discard the varInts and extract the public key hash. I&rsquo;ve also expressed the op_codes to make this more clear. We eventually end up with:</p>
+<p>Locking script: <code>OP_DUP OP_HASH160 363bb1ef1d8791bdbd7e7492ef91decc1eb7295d OP_EQUALVERIFY OP_CHECKSIG</code></p>
+<h3 id="primer-on-the-script-language">Primer on the Script language<a hidden class="anchor" aria-hidden="true" href="#primer-on-the-script-language">#</a></h3>
+<p>We are now ready to do the verification, but how does this work exactly?</p>
+<p>Bitcoin has its own programming language simply called Script. It is described as a <em>&quot;Forth-like, stack-based, reverse-Polish, Turing incomplete programming language.&quot;</em> Phew. That is a lot! Let&rsquo;s explain each term one by one:</p>
+<ul>
+<li>
+<p><strong>Forth-like</strong> means Script resembles <a href="https://en.wikipedia.org/wiki/Forth_(programming_language)">Forth</a>, which is an ancient old programming language that you likely have never heard of. One example of this resemblance is Script&rsquo;s use of op_codes, which Forth introduced.</p>
+</li>
+<li>
+<p><strong>Stack-based</strong> means Script evaluates commands on the <em>stack</em> data structure. The stack is a data structure much like a stack of plates. To remove the bottom plate, you have to first remove all the plates above it. Hence, a stack data structure has the characteristic of last in first out (LIFO). You&rsquo;ll see why this is important in the next section when we evaluate the locking and unlocking scripts.</p>
+</li>
+<li>
+<p><strong>Reverse-Polish</strong> is a different way of expressing mathematical notations, where the operators follow the operand. Normally, we would express addition as <code>3 + 4</code>, but with the Reverse Polish Notation, we would express the same expression as <code>3 4 + </code> instead. Reverse Polish Notation was invented to save computer memory and improve calculation speed in the 50s.</p>
+</li>
+<li>
+<p><strong>Turing incomplete</strong> means Script is not a complete programming language, like C or Python. Script can perform certain operations butnot other more complex ones, such as looping and conditional statements. This was an intentional design decision to prevent abuse. Only simple scripts can be executed.</p>
+</li>
+</ul>
+<h3 id="evaluating-the-scripts">Evaluating the scripts<a hidden class="anchor" aria-hidden="true" href="#evaluating-the-scripts">#</a></h3>
+<p>With the primer on Script, let&rsquo;s now see the unlocking and locking scripts are evaluated, step-by-step.</p>
+<p>First, we assemble the elements in the order of execution. Bitcoin protocol specifies we load the unlocking script then locking script, like so:</p>
+<pre tabindex="0"><code>&lt;signature&gt;
+&lt;pubkey&gt;
+OP_DUP 
+OP_HASH160 
+&lt;pubkey_hash&gt;
+OP_EQUALVERIFY 
+OP_CHECKSIG
+</code></pre><p>Bitcoin protocol will execute each element, one at a time. If it is a value, it is pushed onto the stack. If it is an op_code, the op_code runs, consuming one or more elements on the stack. This is repeated until all of the elements are executed. At that point, whatever is left on the stack will determine whether whether the transaction is validate and the UTXO is unlocked.</p>
+<p>Ready? Let&rsquo;s give it a try!</p>
+<h4 id="1-signature">1. &lt;Signature&gt;<a hidden class="anchor" aria-hidden="true" href="#1-signature">#</a></h4>
+<p>This is a value, so push it onto the stack.</p>
+<h4 id="2-pubkey">2. &lt;pubkey&gt;<a hidden class="anchor" aria-hidden="true" href="#2-pubkey">#</a></h4>
+<p>Another value, push onto the stack!</p>
+<h4 id="3-op_dup">3. OP_DUP<a hidden class="anchor" aria-hidden="true" href="#3-op_dup">#</a></h4>
+<p>Our first op_code is <code>OP_DUP</code>. This pushes a copy of the topmost stack item on to the stack. Since the topmost item is the  &lt;pubkey&gt;, it is copied and pushed onto the stack.</p>
+<h4 id="4-op_hash160">4. OP_HASH160<a hidden class="anchor" aria-hidden="true" href="#4-op_hash160">#</a></h4>
+<p><code>OP_HASH160</code> consumes the topmost item on the stack, , the &lt;pubkey&gt;, performs HASH160 on it, and then push the resulting hash onto the stack.</p>
+<p>Note that HASH160 is not a hash function, but a combination of SHA256 and then RIPEMD160 such that <code>RIPEMD160(SHA256(&lt;pubkey&gt;)) = &lt;pubkey_hash&gt;</code>.</p>
+<p>In the <em>helper.py</em>, we&rsquo;ve already implemented both RIPEMD160 and SHA256, so we can observe OP_HASH160 in action.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> helper <span style="color:#f92672">import</span> ripemd160, sha256
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>pubkey <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;024e76f01bc8ad2b0ca775ee0e392f52f5dd29e779388c6503044592c56f69bfe6&#39;</span> 
+</span></span><span style="display:flex;"><span>pubkey_bytes <span style="color:#f92672">=</span> bytes<span style="color:#f92672">.</span>fromhex(pubkey) <span style="color:#75715e"># convert pubkey to bytes before hashing </span>
+</span></span><span style="display:flex;"><span>pubkey_hash <span style="color:#f92672">=</span> ripemd160(sha256(pubkey_bytes)) <span style="color:#75715e"># hash160 is ripemd160(sha256())</span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;Pubkey_hash: &#34;</span>, pubkey_hash<span style="color:#f92672">.</span>hex())
+</span></span></code></pre></div><p><code>Pubkey_hash:  363bb1ef1d8791bdbd7e7492ef91decc1eb7295d</code></p>
+<h4 id="5--pubkey_hash">5.  &lt;pubkey_hash&gt;<a hidden class="anchor" aria-hidden="true" href="#5--pubkey_hash">#</a></h4>
+<p>Another value, push it onto the stack! Astute observers may remark this value, <code>363bb1ef1d8791bdbd7e7492ef91decc1eb7295d</code>, is the same as the &lt;pubkey_hash&gt; we just calculated from hash150. Is this a coincidence? I think not!</p>
+<h4 id="6-op_equalverify">6. OP_EQUALVERIFY<a hidden class="anchor" aria-hidden="true" href="#6-op_equalverify">#</a></h4>
+<p>This op_code is comprised of two op_codes: <code>OP_EQUAL</code> then <code>OP_VERIFY</code>.</p>
+<p>OP_EQUAL consumes the top two items on the stack, compares them, and pushes 1 onto the stack if they are the same, or 0 if different. OP_VERIFY then consumes this top item (i.e. 1 or 0). If it is a 1, continue with the script. If 0, terminate the script.</p>
+<p>This step basically checks whether the HASH160 of the &lt;pubkey&gt; from the unlocking script is equal to the &lt;pubkey_hash&gt; of the locking script.</p>
+<p>We can see that they are equal, so when OP_EQUAL is executed, both items are consumed, and a 1 is pushed onto the stack. Then, OP_VERIFY consumes the 1 and lets us continue with the script.</p>
+<p>The verification of the public key hash is why this type of transaction is called Pay to Public Key Hash (P2PKH).</p>
+<p>In addition to the verification of the digital signature (OP_CHECKSIG, that is the the next step), P2PKH transactions add an extra layer of protection, leveraging the hash functions. Therefore, a P2PKH transaction is protected by ECDSA, RIPEMD160 and SHA256.</p>
+<h4 id="7-op_checksig">7. OP_CHECKSIG<a hidden class="anchor" aria-hidden="true" href="#7-op_checksig">#</a></h4>
+<p>At this point, we have the &lt;signature&gt; and &lt;pubkey&gt; on the stack, and one more op_code to run, OP_CHECKSIG.</p>
+<p>OP_CHECKSIG consumes the top two items on the stack: (1) the digital signature and (2) public key. It checks whether the signature was generated by the correct private key, without revealing the private key. If so, it pushes 1 onto the stack. Otherwise, it pushes 0.</p>
+<p>Since this is the last element for execution and it consumes the 2 items that are, so whatever is left on the stack should be either 1 or 0. If 1 is the remaining value on the stack, it means the script was successful, and the UTXO is unlocked. Conversely, a 0 would mean invalid script and the UTXO will stay put.</p>
+<p>Pretty neat huh?</p>
+<p>Okay, but how does OP_CHECKSIG actually work?</p>
+<p>Not surprisingly, the answer is MATH, or ECDSA verification math to be more precise. This is a big section, so we&rsquo;ll do it next time. We will also finalize our transaction and propate it to the Testnet Bitcoin Network! Stay tuned.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://yugomike.github.io/">Michael Y. Han</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
